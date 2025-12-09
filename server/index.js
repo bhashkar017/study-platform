@@ -22,29 +22,31 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/studygroup', {
+const MONGO_URI = process.env.NODE_ENV === 'test'
+    ? (process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/studygroup_test')
+    : (process.env.MONGO_URI || 'mongodb://localhost:27017/studygroup');
+
+mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true // Though deprecated in newer mongoose, keeping for safety or removing if using 8.x
+    useUnifiedTopology: true
 })
-    .then(() => console.log("Connected to MongoDB"))
+    .then(() => console.log(`Connected to MongoDB: ${MONGO_URI}`))
     .catch((err) => console.error("MongoDB connection error:", err));
 
 // Socket.io
 io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
+    // console.log('A user connected:', socket.id); // Quieter logs for tests
 
     socket.on('join_group', (groupId) => {
         socket.join(groupId);
-        console.log(`User ${socket.id} joined group ${groupId}`);
     });
 
     socket.on('send_message', (data) => {
-        // Broadcast to the specific group
         io.to(data.groupId).emit('receive_message', data);
     });
 
     socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
+        // console.log('User disconnected:', socket.id);
     });
 });
 
@@ -58,14 +60,20 @@ const authRoutes = require('./routes/auth.routes');
 const groupRoutes = require('./routes/group.routes');
 const postRoutes = require('./routes/post.routes');
 const fileRoutes = require('./routes/file.routes');
+const userRoutes = require('./routes/user.routes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/files', fileRoutes);
-app.use('/api/users', require('./routes/user.routes'));
+app.use('/api/users', userRoutes);
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+
+if (require.main === module) {
+    server.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+module.exports = server;
