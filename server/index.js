@@ -77,6 +77,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/flashcards', require('./routes/flashcard.routes'));
 app.use('/api/events', require('./routes/event.routes'));
 app.use('/api/messages', require('./routes/message.routes'));
+app.use('/api/ai', require('./routes/ai.routes'));
 
 const PORT = process.env.PORT || 5000;
 
