@@ -17,6 +17,8 @@ const io = new Server(server, {
     }
 });
 
+app.set('io', io); // Share socket.io instance with routes
+
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -39,6 +41,11 @@ io.on('connection', (socket) => {
 
     socket.on('join_group', (groupId) => {
         socket.join(groupId);
+    });
+
+    socket.on('join_user_room', (userId) => {
+        socket.join(userId);
+        // console.log(`User joined personal room: ${userId}`);
     });
 
     socket.on('send_message', (data) => {
@@ -67,6 +74,9 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/flashcards', require('./routes/flashcard.routes'));
+app.use('/api/events', require('./routes/event.routes'));
+app.use('/api/messages', require('./routes/message.routes'));
 
 const PORT = process.env.PORT || 5000;
 

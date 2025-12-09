@@ -1,22 +1,41 @@
 const router = require('express').Router();
 const Post = require('../models/Post');
+const User = require('../models/User'); // Added User model import
 const verifyToken = require('../middleware/auth.middleware');
 
 // Create Post
-// Create Post
+// Create a Post
 router.post('/', verifyToken, async (req, res) => {
     try {
-        const { title, content, groupId, files, poll } = req.body;
-        const newPost = new Post({
+        const { title, content, groupId, poll } = req.body;
+
+        let newPost = new Post({
             title,
             content,
             group: groupId,
-            author: req.user._id,
-            files: files || [],
-            poll: poll || undefined
+            author: req.user._id || req.user.id,
+            comments: []
         });
+
+        if (poll && poll.options && poll.options.length >= 2) {
+            newPost.poll = poll;
+        }
+
         const savedPost = await newPost.save();
-        res.status(201).json(savedPost);
+
+        // Populate author for frontend immediately
+        const populatedPost = await Post.findById(savedPost._id).populate('author', 'username profilePicture');
+
+        // Gamification: +5 Reputation for creating a post
+        await User.findByIdAndUpdate(req.user._id || req.user.id, { $inc: { reputation: 5 } });
+
+        // Real-time: Emit event to group room
+        const io = req.app.get('io');
+        if (io) {
+            io.to(groupId).emit('new_post', populatedPost);
+        }
+
+        res.status(201).json(populatedPost);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -35,7 +54,7 @@ router.get('/group/:groupId', verifyToken, async (req, res) => {
     }
 });
 
-// Add Comment
+// Add a Comment
 router.post('/:id/comment', verifyToken, async (req, res) => {
     try {
         const { content } = req.body;
@@ -45,6 +64,12 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
             author: req.user._id
         });
         await post.save();
+
+        // Gamification: +2 Reputation for commenting
+        console.log(`[DEBUG] Incrementing reputation for user ${req.user._id}...`);
+        const updatedUser = await User.findByIdAndUpdate(req.user._id || req.user.id, { $inc: { reputation: 2 } }, { new: true });
+        console.log(`[DEBUG] Reputation updated. New Score: ${updatedUser ? updatedUser.reputation : 'User not found'}`);
+
         res.json(post);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -66,6 +91,11 @@ router.delete('/:id', verifyToken, async (req, res) => {
         }
 
         await post.deleteOne();
+
+        // Gamification: -5 Reputation for deleting a post
+        console.log(`[DEBUG] Decrementing reputation for user ${req.user._id}...`);
+        await User.findByIdAndUpdate(req.user._id, { $inc: { reputation: -5 } });
+
         res.json({ message: 'Post deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -91,6 +121,32 @@ router.post('/:id/vote', verifyToken, async (req, res) => {
         }
 
         await post.save();
+        res.json(post);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Delete Comment
+router.delete('/:id/comment/:commentId', verifyToken, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+        if (comment.author.toString() !== req.user._id) {
+            return res.status(403).json({ message: 'Not authorized to delete this comment' });
+        }
+
+        comment.deleteOne(); // Remove subdocument
+        await post.save();
+
+        // Gamification: -2 Reputation for deleting a comment
+        console.log(`[DEBUG] Decrementing reputation for user ${req.user._id} (comment deleted)...`);
+        await User.findByIdAndUpdate(req.user._id, { $inc: { reputation: -2 } });
+
         res.json(post);
     } catch (err) {
         res.status(500).json({ error: err.message });

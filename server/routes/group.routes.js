@@ -23,7 +23,7 @@ router.post('/', verifyToken, async (req, res) => {
 router.get('/', verifyToken, async (req, res) => {
     try {
         // Return all groups for discovery + groups user is part of
-        const allGroups = await Group.find().populate('members', 'username');
+        const allGroups = await Group.find().populate('members', 'username name profilePicture reputation');
         res.json(allGroups);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -49,7 +49,7 @@ router.post('/:id/join', verifyToken, async (req, res) => {
 // Get Single Group
 router.get('/:id', verifyToken, async (req, res) => {
     try {
-        const group = await Group.findById(req.params.id).populate('members', 'username');
+        const group = await Group.findById(req.params.id).populate('members', 'username name profilePicture reputation');
         res.json(group);
     } catch (err) {
         res.status(500).json({ error: err.message });

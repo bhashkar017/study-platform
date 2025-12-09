@@ -37,8 +37,30 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    const refreshUser = async () => {
+        try {
+            console.log("Refreshing user data...");
+            const res = await axios.get('http://localhost:5000/api/auth/me');
+            console.log("User data refreshed:", res.data);
+            setUser(res.data);
+            localStorage.setItem('user', JSON.stringify(res.data));
+        } catch (err) {
+            console.error("Failed to refresh user data", err);
+        }
+    };
+
+    const [chatState, setChatState] = useState({ isOpen: false, activeUser: null });
+
+    const openChat = (user) => {
+        setChatState({ isOpen: true, activeUser: user });
+    };
+
+    const closeChat = () => {
+        setChatState({ isOpen: false, activeUser: null });
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, logout, loading, refreshUser, chatState, openChat, closeChat }}>
             {!loading && children}
         </AuthContext.Provider>
     );

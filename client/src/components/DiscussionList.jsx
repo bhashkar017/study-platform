@@ -3,21 +3,44 @@ import axios from 'axios';
 import { MessageCircle, User, Trash2, BarChart2, Smile, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+import io from 'socket.io-client';
+
 const DiscussionList = ({ groupId }) => {
     const [posts, setPosts] = useState([]);
     const [isCreating, setIsCreating] = useState(false);
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
+
+    // ...
+
+    // Socket State
+    const [socket, setSocket] = useState(null);
 
     // New Post Form State
     const [newPost, setNewPost] = useState({ title: '', content: '' });
+    // State for UI toggles and inputs
+    const [activeComments, setActiveComments] = useState({});
+    const [commentInputs, setCommentInputs] = useState({});
     const [showPollCreator, setShowPollCreator] = useState(false);
     const [pollOptions, setPollOptions] = useState(['', '']);
 
-    // Comment Input State (keyed by postId)
-    const [commentInputs, setCommentInputs] = useState({});
-    const [activeComments, setActiveComments] = useState({}); // To toggle comment visibility
+    const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '👏'];
 
-    const EMOJIS = ['👍', '🔥', '🎉', '🤔', '📚', '💡', '✅', '❌'];
+    useEffect(() => {
+        const newSocket = io('http://localhost:5000');
+        setSocket(newSocket);
+
+        newSocket.emit('join_group', groupId);
+
+        newSocket.on('new_post', (post) => {
+            setPosts(prev => [post, ...prev]);
+        });
+
+        newSocket.on('post_updated', (updatedPost) => {
+            setPosts(prev => prev.map(p => p._id === updatedPost._id ? updatedPost : p));
+        });
+
+        return () => newSocket.close();
+    }, [groupId]);
 
     useEffect(() => {
         fetchPosts();
@@ -53,6 +76,7 @@ const DiscussionList = ({ groupId }) => {
             setPollOptions(['', '']);
             setIsCreating(false);
             fetchPosts();
+            if (refreshUser) refreshUser();
         } catch (err) {
             console.error("Error creating post:", err);
         }
@@ -66,8 +90,20 @@ const DiscussionList = ({ groupId }) => {
             await axios.post(`http://localhost:5000/api/posts/${postId}/comment`, { content });
             setCommentInputs({ ...commentInputs, [postId]: '' });
             fetchPosts(); // Refresh to see new comment
+            if (refreshUser) refreshUser();
         } catch (err) {
             alert("Failed to post comment");
+        }
+    };
+
+    const handleDeleteComment = async (postId, commentId) => {
+        if (!window.confirm("Delete this comment?")) return;
+        try {
+            await axios.delete(`http://localhost:5000/api/posts/${postId}/comment/${commentId}`);
+            fetchPosts();
+            if (refreshUser) refreshUser();
+        } catch (err) {
+            alert("Failed to delete comment");
         }
     };
 
@@ -193,24 +229,29 @@ const DiscussionList = ({ groupId }) => {
 
             {/* Posts List */}
             <div className="space-y-4">
-                {posts.map((post) => {
+                {Array.isArray(posts) && posts.map((post) => {
+                    if (!post) return null;
                     const isAuthor = user && post.author && (post.author._id === user.id || post.author._id === user._id || post.author === user.id);
                     const showComments = activeComments[post._id];
 
+                    // Safety for Polls
+                    const cleanOptions = post.poll?.options?.filter(o => o) || [];
+
                     return (
-                        <div key={post._id} className="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+                        <div key={post._id || Math.random()} className="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
                             <div className="flex justify-between items-start">
                                 <div className="flex-1">
                                     <h3 className="text-xl font-semibold text-gray-900 mb-2">{post.title}</h3>
                                     <p className="text-gray-600 mb-4 whitespace-pre-wrap">{post.content}</p>
 
                                     {/* Poll Display */}
-                                    {post.poll && post.poll.options && post.poll.options.length > 0 && (
+                                    {post.poll && cleanOptions.length > 0 && (
                                         <div className="mb-4 bg-gray-50 p-4 rounded-md">
-                                            {post.poll.options.map((option, idx) => {
-                                                const totalVotes = post.poll.options.reduce((acc, curr) => acc + curr.votes.length, 0);
-                                                const percentage = totalVotes === 0 ? 0 : Math.round((option.votes.length / totalVotes) * 100);
-                                                const hasVoted = option.votes.includes(user?.id || user?._id);
+                                            {cleanOptions.map((option, idx) => {
+                                                const votes = option.votes || [];
+                                                const totalVotes = cleanOptions.reduce((acc, curr) => acc + (curr.votes?.length || 0), 0);
+                                                const percentage = totalVotes === 0 ? 0 : Math.round((votes.length / totalVotes) * 100);
+                                                const hasVoted = votes.some(v => (v === user?.id || v === user?._id || v?._id === user?.id || v?._id === user?._id));
 
                                                 return (
                                                     <div key={idx} className="mb-2 last:mb-0">
@@ -225,7 +266,7 @@ const DiscussionList = ({ groupId }) => {
                                                             />
                                                             <div className="relative z-10 flex justify-between items-center">
                                                                 <span className="font-medium text-gray-800">{option.text}</span>
-                                                                <span className="text-xs text-gray-500">{percentage}% ({option.votes.length})</span>
+                                                                <span className="text-xs text-gray-500">{percentage}% ({votes.length})</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -252,14 +293,14 @@ const DiscussionList = ({ groupId }) => {
                                     <User size={16} className="mr-2" />
                                     <span>{post.author?.username || 'Unknown'}</span>
                                     <span className="mx-2">•</span>
-                                    <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                                    <span>{post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'Just now'}</span>
                                 </div>
                                 <button
                                     onClick={() => setActiveComments(prev => ({ ...prev, [post._id]: !prev[post._id] }))}
                                     className="flex items-center hover:text-indigo-600 transition"
                                 >
                                     <MessageCircle size={16} className="mr-2" />
-                                    <span>{post.comments.length} comments</span>
+                                    <span>{(post.comments || []).length} comments</span>
                                 </button>
                             </div>
 
@@ -268,8 +309,8 @@ const DiscussionList = ({ groupId }) => {
                                 <div className="mt-4 pt-4 border-t border-gray-100 bg-gray-50 -mx-6 -mb-6 p-6 rounded-b-lg">
                                     {/* List Comments */}
                                     <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
-                                        {post.comments.map((comment, i) => (
-                                            <div key={i} className="flex space-x-2">
+                                        {(post.comments || []).map((comment, i) => (
+                                            <div key={comment._id || i} className="flex space-x-2 group">
                                                 <div className="flex-shrink-0">
                                                     {comment.author?.profilePicture ? (
                                                         <img src={comment.author.profilePicture} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
@@ -279,8 +320,19 @@ const DiscussionList = ({ groupId }) => {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className="bg-white p-2 rounded-lg shadow-sm flex-1">
-                                                    <p className="text-sm font-semibold text-gray-800">{comment.author?.name || comment.author?.username || 'User'}</p>
+                                                <div className="bg-white p-2 rounded-lg shadow-sm flex-1 relative">
+                                                    <div className="flex justify-between items-start">
+                                                        <p className="text-sm font-semibold text-gray-800">{comment.author?.name || comment.author?.username || 'User'}</p>
+                                                        {user && comment.author && (comment.author._id === user.id || comment.author._id === user._id) && (
+                                                            <button
+                                                                onClick={() => handleDeleteComment(post._id, comment._id)}
+                                                                className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1"
+                                                                title="Delete Comment"
+                                                            >
+                                                                <Trash2 size={12} />
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                     <p className="text-sm text-gray-600">{comment.content}</p>
                                                 </div>
                                             </div>

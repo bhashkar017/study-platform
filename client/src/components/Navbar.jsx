@@ -1,11 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Menu, User, LogOut, Camera } from 'lucide-react';
+import { Menu, User, LogOut, Camera, Bell, MessageSquare } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import ChatDrawer from './ChatDrawer';
 
 const Navbar = () => {
-    const { user, logout, login } = useAuth(); // Assuming login or updateUser updates context
+    const { user, logout, login, chatState, openChat, closeChat } = useAuth(); // Assuming login or updateUser updates context
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const resultRef = useRef(null);
@@ -78,48 +79,61 @@ const Navbar = () => {
                     </Link>
 
                     {user ? (
-                        <div className="relative" ref={resultRef}>
+                        <div className="flex items-center space-x-2">
+                            {/* Messages Toggle */}
                             <button
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="text-indigo-100 hover:text-white p-2 rounded-md focus:outline-none transition-colors flex items-center"
+                                onClick={() => openChat()}
+                                className="text-indigo-100 hover:text-white p-2 rounded-full hover:bg-indigo-700 transition"
                             >
-                                <ProfileAvatar size={8} src={user.profilePicture} name={user.name || user.username} />
-                                <Menu size={20} className="ml-2" />
+                                <MessageSquare size={20} />
                             </button>
 
-                            {isMenuOpen && (
-                                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl overflow-hidden ring-1 ring-black ring-opacity-5 transform transition-all ease-out duration-200 origin-top-right">
-                                    <div className="p-6 border-b border-gray-100 bg-gray-50 flex flex-col items-center relative">
-                                        <div className="group relative cursor-pointer" onClick={handleUploadClick}>
-                                            <ProfileAvatar size={24} src={user.profilePicture} name={user.name || user.username} />
-                                            <div className="absolute inset-0 bg-black bg-opacity-30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Camera className="text-white" />
+                            <div className="relative" ref={resultRef}>
+                                <button
+                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                    className="text-indigo-100 hover:text-white p-2 rounded-md focus:outline-none transition-colors flex items-center"
+                                >
+                                    <ProfileAvatar size={8} src={user.profilePicture} name={user.name || user.username} />
+                                    <Menu size={20} className="ml-2" />
+                                </button>
+
+                                {isMenuOpen && (
+                                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl overflow-hidden ring-1 ring-black ring-opacity-5 transform transition-all ease-out duration-200 origin-top-right">
+                                        <div className="p-6 border-b border-gray-100 bg-gray-50 flex flex-col items-center relative">
+                                            <div className="group relative cursor-pointer" onClick={handleUploadClick}>
+                                                <ProfileAvatar size={24} src={user.profilePicture} name={user.name || user.username} />
+                                                <div className="absolute inset-0 bg-black bg-opacity-30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Camera className="text-white" />
+                                                </div>
                                             </div>
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                onChange={handleFileChange}
+                                                className="hidden"
+                                                accept="image/*"
+                                            />
+
+                                            <h3 className="text-xl font-bold text-gray-900 mt-3">{user.name || user.username}</h3>
+                                            <p className="text-sm text-gray-500">@{user.username}</p>
+                                            <div className="mt-2 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                                                <span className="text-xs font-semibold text-indigo-600">🏆 Reputation: {user.reputation || 0}</span>
+                                            </div>
+                                            <p className="text-xs text-gray-400 mt-1">{user.email}</p>
                                         </div>
-                                        <input
-                                            type="file"
-                                            ref={fileInputRef}
-                                            onChange={handleFileChange}
-                                            className="hidden"
-                                            accept="image/*"
-                                        />
 
-                                        <h3 className="text-xl font-bold text-gray-900 mt-3">{user.name || user.username}</h3>
-                                        <p className="text-sm text-gray-500">@{user.username}</p>
-                                        <p className="text-xs text-gray-400">{user.email}</p>
+                                        <div className="p-2">
+                                            <button
+                                                onClick={handleLogout}
+                                                className="w-full flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            >
+                                                <LogOut size={18} className="mr-3" />
+                                                Sign out
+                                            </button>
+                                        </div>
                                     </div>
-
-                                    <div className="p-2">
-                                        <button
-                                            onClick={handleLogout}
-                                            className="w-full flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                        >
-                                            <LogOut size={18} className="mr-3" />
-                                            Sign out
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
                     ) : (
                         <div className="space-x-4">
@@ -129,6 +143,7 @@ const Navbar = () => {
                     )}
                 </div>
             </div>
+            <ChatDrawer isOpen={chatState.isOpen} onClose={closeChat} initialActiveChat={chatState.activeUser} />
         </nav>
     );
 };

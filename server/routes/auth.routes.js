@@ -47,7 +47,28 @@ router.post('/login', async (req, res) => {
 
         // Create token
         const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-        res.json({ token, user: { id: user._id, name: user.name, username: user.username, email: user.email, profilePicture: user.profilePicture } });
+        res.json({
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                username: user.username,
+                email: user.email,
+                profilePicture: user.profilePicture,
+                reputation: user.reputation
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get Current User
+const verifyToken = require('../middleware/auth.middleware');
+router.get('/me', verifyToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).select('-password');
+        res.json(user);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
