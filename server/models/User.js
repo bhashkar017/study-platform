@@ -7,6 +7,8 @@ const UserSchema = new mongoose.Schema({
     password: { type: String, required: true },
     profilePicture: { type: String, default: '' }, // URL to image
     reputation: { type: Number, default: 0 },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
     createdAt: { type: Date, default: Date.now }
 });
 

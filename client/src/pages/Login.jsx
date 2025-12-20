@@ -18,7 +18,7 @@ const Login = () => {
         try {
             const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
             login(res.data.token, res.data.user);
-            navigate('/');
+            navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to login');
         } finally {
@@ -54,6 +54,14 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <div className="text-sm">
+                            <Link to="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
+                                Forgot your password?
+                            </Link>
                         </div>
                     </div>
 

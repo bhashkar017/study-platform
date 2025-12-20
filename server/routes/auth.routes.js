@@ -2,6 +2,81 @@ const router = require('express').Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+
+// Forgot Password (OTP Generation)
+router.post('/forgot-password', async (req, res) => {
+    try {
+        const user = await User.findOne({ email: req.body.email });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Set Fixed Demo OTP
+        const otp = "1234";
+
+        // Hash and set to resetPasswordToken (Storing hash of "1234")
+        user.resetPasswordToken = crypto.createHash('sha256').update(otp).digest('hex');
+        user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 Minutes
+
+        await user.save();
+
+        console.log(`OTP generated for ${user.email}: ${otp}`);
+
+        res.status(200).json({ success: true, data: 'OTP sent to email' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Verify OTP
+router.post('/verify-otp', async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        const resetPasswordToken = crypto.createHash('sha256').update(otp).digest('hex');
+
+        const user = await User.findOne({
+            email,
+            resetPasswordToken,
+            resetPasswordExpire: { $gt: Date.now() }
+        });
+
+        if (!user) return res.status(400).json({ message: 'Invalid OTP' });
+
+        res.status(200).json({ success: true, message: 'OTP verified' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Reset Password Final
+router.post('/reset-password-final', async (req, res) => {
+    try {
+        const { email, otp, password } = req.body;
+
+        const resetPasswordToken = crypto.createHash('sha256').update(otp).digest('hex');
+
+        const user = await User.findOne({
+            email,
+            resetPasswordToken,
+            resetPasswordExpire: { $gt: Date.now() }
+        });
+
+        if (!user) return res.status(400).json({ message: 'Invalid or expired session' });
+
+        // Set new password
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save();
+
+        res.status(200).json({ success: true, data: 'Password updated success' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // Register
 router.post('/register', async (req, res) => {

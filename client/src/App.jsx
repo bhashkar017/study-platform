@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import GroupView from './pages/GroupView';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -11,11 +13,13 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
 
                 <Route element={<ProtectedRoute />}>
-                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/group/:groupId" element={<GroupView />} />
                 </Route>
 
@@ -32,7 +36,7 @@ function App() {
                For now, simple placement is fine, the user requested it. 
              */}
             <AIAssistant />
-        </BrowserRouter>
+        </BrowserRouter >
     );
 }
 
