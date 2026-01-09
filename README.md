@@ -1,4 +1,10 @@
 # 📚 StudyGroup - Collaborative Learning Platform
+<a href="https://your-vercel-url.com" target="_blank">
+  <img src="https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel" alt="Live Demo" />
+</a>
+
+> **[Click here to view the Live Demo](https://your-vercel-url.com)**
+
 
 A full-stack MERN application designed to help students organize study groups, share resources, and collaborate effectively.
 
