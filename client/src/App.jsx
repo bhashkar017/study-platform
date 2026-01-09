@@ -8,6 +8,7 @@ import GroupView from './pages/GroupView';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import AIAssistant from './components/AIAssistant';
+import Developer from './pages/Developer';
 
 function App() {
     return (
@@ -23,6 +24,7 @@ function App() {
                     <Route path="/group/:groupId" element={<GroupView />} />
                 </Route>
 
+                <Route path="/developer" element={<Developer />} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
 

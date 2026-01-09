@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Menu, User, LogOut, Camera, Bell, MessageSquare } from 'lucide-react';
+import { Menu, User, LogOut, Camera, Bell, MessageSquare, Code } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import ChatDrawer from './ChatDrawer';
@@ -123,6 +123,14 @@ const Navbar = () => {
                                         </div>
 
                                         <div className="p-2">
+                                            <Link
+                                                to="/developer"
+                                                className="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                onClick={() => setIsMenuOpen(false)}
+                                            >
+                                                <Code size={18} className="mr-3 text-gray-500" />
+                                                Developer Info
+                                            </Link>
                                             <button
                                                 onClick={handleLogout}
                                                 className="w-full flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -137,6 +145,7 @@ const Navbar = () => {
                         </div>
                     ) : (
                         <div className="space-x-4">
+                            <Link to="/developer" className="text-indigo-200 hover:text-white transition">Developer</Link>
                             <Link to="/login" className="text-indigo-200 hover:text-white transition">Login</Link>
                             <Link to="/register" className="bg-white text-indigo-600 px-4 py-2 rounded-md font-medium hover:bg-indigo-50 transition">Register</Link>
                         </div>

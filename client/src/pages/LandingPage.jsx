@@ -254,6 +254,36 @@ const LandingPage = () => {
                 </div>
             </div>
 
+
+            {/* Meet the Creator Section */}
+            <div className="py-24 bg-gray-900 border-t border-gray-800 relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    <div className="flex flex-col md:flex-row items-center gap-12 bg-gray-800/40 p-10 rounded-3xl border border-gray-700/50 backdrop-blur-sm hover:border-purple-500/30 transition-all duration-500">
+                        <div className="w-48 h-48 flex-shrink-0 relative group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-500"></div>
+                            <img
+                                src="https://ui-avatars.com/api/?name=Bhashkar+Anand&background=random&size=256"
+                                alt="Bhashkar Anand"
+                                className="relative w-full h-full object-cover rounded-full border-4 border-gray-900"
+                            />
+                        </div>
+                        <div className="text-center md:text-left">
+                            <h2 className="text-3xl font-bold mb-4">Meet the <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">Creator</span></h2>
+                            <p className="text-xl text-gray-300 mb-6 font-medium">Bhashkar Anand</p>
+                            <p className="text-gray-400 mb-8 max-w-xl leading-relaxed">
+                                Passionate about educational technology and building tools that make a difference in students' lives.
+                                This platform is a result of dedicated full-stack engineering.
+                            </p>
+                            <Link to="/developer" className="inline-flex items-center px-6 py-3 rounded-full bg-gray-800 border border-gray-600 hover:bg-gray-700 hover:border-purple-500 transition-all group">
+                                <span className="mr-2">View Developer Profile</span>
+                                <span className="group-hover:translate-x-1 transition-transform">→</span>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* CTA */}
             <div className="py-24 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-pink-900/20 -z-10"></div>
@@ -281,6 +311,7 @@ const LandingPage = () => {
                             <li className="hover:text-purple-400 cursor-pointer">Study Groups</li>
                             <li className="hover:text-purple-400 cursor-pointer">AI Assistant</li>
                             <li className="hover:text-purple-400 cursor-pointer">Pricing</li>
+                            <li><Link to="/developer" className="hover:text-purple-400 cursor-pointer">Developer</Link></li>
                         </ul>
                     </div>
                     <div>
@@ -292,8 +323,12 @@ const LandingPage = () => {
                         </ul>
                     </div>
                 </div>
-                <div className="text-center text-gray-600 pt-8 border-t border-gray-900">
+                <div className="text-center text-gray-600 pt-8 border-t border-gray-900 flex flex-col items-center gap-2">
                     <p>&copy; {new Date().getFullYear()} StudyPlatform. All rights reserved.</p>
+                    <p className="flex items-center gap-1">
+                        Made with <span className="text-red-500">❤️</span> by
+                        <Link to="/developer" className="text-purple-400 hover:text-purple-300 font-medium">Bhashkar</Link>
+                    </p>
                 </div>
             </footer>
         </div>
