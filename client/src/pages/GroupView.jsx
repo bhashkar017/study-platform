@@ -34,7 +34,7 @@ const GroupView = () => {
 
     const fetchGroup = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/groups/${groupId}`);
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/groups/${groupId}`);
             setGroup(res.data);
             setEditFormData({ name: res.data.name, description: res.data.description });
         } catch (err) {
@@ -46,7 +46,7 @@ const GroupView = () => {
 
     const handleJoinGroup = async () => {
         try {
-            const res = await axios.post(`http://localhost:5000/api/groups/${groupId}/join`);
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/groups/${groupId}/join`);
             setGroup(res.data); // Update group data (including new member count)
         } catch (err) {
             alert("Failed to join group");
@@ -56,7 +56,7 @@ const GroupView = () => {
     const handleDeleteGroup = async () => {
         if (!window.confirm("Are you sure you want to delete this group?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/groups/${groupId}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/groups/${groupId}`);
             navigate('/');
         } catch (err) {
             alert("Failed to delete group");
@@ -66,7 +66,7 @@ const GroupView = () => {
     const handleUpdateGroup = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.put(`http://localhost:5000/api/groups/${groupId}`, editFormData);
+            const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/groups/${groupId}`, editFormData);
             setGroup(res.data);
             setIsEditing(false);
         } catch (err) {

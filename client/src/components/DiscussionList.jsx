@@ -26,7 +26,7 @@ const DiscussionList = ({ groupId }) => {
     const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '👏'];
 
     useEffect(() => {
-        const newSocket = io('http://localhost:5000');
+        const newSocket = io(import.meta.env.VITE_API_URL);
         setSocket(newSocket);
 
         newSocket.emit('join_group', groupId);
@@ -48,7 +48,7 @@ const DiscussionList = ({ groupId }) => {
 
     const fetchPosts = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/posts/group/${groupId}`);
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/posts/group/${groupId}`);
             setPosts(res.data);
         } catch (err) {
             console.error("Error fetching posts:", err);
@@ -70,7 +70,7 @@ const DiscussionList = ({ groupId }) => {
                 }
             }
 
-            await axios.post('http://localhost:5000/api/posts', postData);
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/posts`, postData);
             setNewPost({ title: '', content: '' });
             setShowPollCreator(false);
             setPollOptions(['', '']);
@@ -87,7 +87,7 @@ const DiscussionList = ({ groupId }) => {
         if (!content?.trim()) return;
 
         try {
-            await axios.post(`http://localhost:5000/api/posts/${postId}/comment`, { content });
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/posts/${postId}/comment`, { content });
             setCommentInputs({ ...commentInputs, [postId]: '' });
             fetchPosts(); // Refresh to see new comment
             if (refreshUser) refreshUser();
@@ -99,7 +99,7 @@ const DiscussionList = ({ groupId }) => {
     const handleDeleteComment = async (postId, commentId) => {
         if (!window.confirm("Delete this comment?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/posts/${postId}/comment/${commentId}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/posts/${postId}/comment/${commentId}`);
             fetchPosts();
             if (refreshUser) refreshUser();
         } catch (err) {
@@ -110,7 +110,7 @@ const DiscussionList = ({ groupId }) => {
     const handleDeletePost = async (postId) => {
         if (!window.confirm("Delete this post?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/posts/${postId}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/posts/${postId}`);
             setPosts(posts.filter(p => p._id !== postId));
         } catch (err) {
             alert("Failed to delete post");
@@ -119,7 +119,7 @@ const DiscussionList = ({ groupId }) => {
 
     const handleVote = async (postId, optionIndex) => {
         try {
-            await axios.post(`http://localhost:5000/api/posts/${postId}/vote`, { optionIndex });
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/posts/${postId}/vote`, { optionIndex });
             fetchPosts();
         } catch (err) {
             console.error(err);

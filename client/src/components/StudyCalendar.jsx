@@ -23,7 +23,7 @@ const StudyCalendar = ({ groupId }) => {
 
     const fetchEvents = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/events/group/${groupId}`);
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/events/group/${groupId}`);
             setEvents(res.data);
         } catch (err) {
             console.error("Error fetching events:", err);
@@ -38,7 +38,7 @@ const StudyCalendar = ({ groupId }) => {
             const startDateTime = new Date(`${selectedDateStr}T${newEvent.start}`);
             const endDateTime = new Date(`${selectedDateStr}T${newEvent.end}`);
 
-            await axios.post('http://localhost:5000/api/events', {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/events`, {
                 title: newEvent.title,
                 description: newEvent.description,
                 start: startDateTime,
@@ -57,7 +57,7 @@ const StudyCalendar = ({ groupId }) => {
     const handleDeleteEvent = async (eventId) => {
         if (!window.confirm("Delete this event?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/events/${eventId}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/events/${eventId}`);
             setEvents(events.filter(e => e._id !== eventId));
         } catch (err) {
             alert("Failed to delete event");

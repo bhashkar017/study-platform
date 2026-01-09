@@ -23,7 +23,7 @@ const ChatDrawer = ({ isOpen, onClose, initialActiveChat }) => {
     useEffect(() => {
         if (!user) return;
 
-        const newSocket = io('http://localhost:5000');
+        const newSocket = io(import.meta.env.VITE_API_URL);
         setSocket(newSocket);
 
         newSocket.on('connect', () => {
@@ -67,7 +67,7 @@ const ChatDrawer = ({ isOpen, onClose, initialActiveChat }) => {
 
     const fetchConversations = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/messages/conversations/all');
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messages/conversations/all`);
             setConversations(res.data);
         } catch (err) {
             console.error("Failed to fetch conversations", err);
@@ -76,7 +76,7 @@ const ChatDrawer = ({ isOpen, onClose, initialActiveChat }) => {
 
     const fetchMessages = async (otherUserId) => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/messages/${otherUserId}`);
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messages/${otherUserId}`);
             setMessages(res.data);
         } catch (err) {
             console.error("Failed to fetch messages", err);
@@ -88,7 +88,7 @@ const ChatDrawer = ({ isOpen, onClose, initialActiveChat }) => {
         if (!newMessage.trim() || !activeChat) return;
 
         try {
-            const res = await axios.post('http://localhost:5000/api/messages', {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/messages`, {
                 recipientId: activeChat._id,
                 content: newMessage
             });

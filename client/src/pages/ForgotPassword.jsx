@@ -24,7 +24,7 @@ const ForgotPassword = () => {
         setError('');
         setMessage('');
         try {
-            await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/forgot-password`, { email });
             setMessage(`OTP sent to ${email}`);
             setStep(2);
         } catch (err) {
@@ -40,7 +40,7 @@ const ForgotPassword = () => {
         setLoading(true);
         setError('');
         try {
-            await axios.post('http://localhost:5000/api/auth/verify-otp', { email, otp });
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/verify-otp`, { email, otp });
             setStep(3);
             setMessage('');
         } catch (err) {
@@ -58,7 +58,7 @@ const ForgotPassword = () => {
         setLoading(true);
         setError('');
         try {
-            await axios.post('http://localhost:5000/api/auth/reset-password-final', { email, otp, password: newPassword });
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/reset-password-final`, { email, otp, password: newPassword });
             setMessage('Password reset successful! Redirecting to login...');
             setTimeout(() => navigate('/login'), 2000);
         } catch (err) {

@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
     const refreshUser = async () => {
         try {
             console.log("Refreshing user data...");
-            const res = await axios.get('http://localhost:5000/api/auth/me');
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`);
             console.log("User data refreshed:", res.data);
             setUser(res.data);
             localStorage.setItem('user', JSON.stringify(res.data));

@@ -15,7 +15,7 @@ const FlashcardsList = ({ groupId, onStudyDeck }) => {
 
     const fetchDecks = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/flashcards/group/${groupId}`);
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/flashcards/group/${groupId}`);
             setDecks(res.data);
         } catch (err) {
             console.error("Error fetching decks:", err);
@@ -25,7 +25,7 @@ const FlashcardsList = ({ groupId, onStudyDeck }) => {
     const handleCreateDeck = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/flashcards/deck', {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/flashcards/deck`, {
                 ...newDeck,
                 groupId
             });
@@ -40,7 +40,7 @@ const FlashcardsList = ({ groupId, onStudyDeck }) => {
     const handleDeleteDeck = async (deckId) => {
         if (!window.confirm("Delete this deck all cards?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/flashcards/deck/${deckId}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/flashcards/deck/${deckId}`);
             setDecks(decks.filter(d => d._id !== deckId));
         } catch (err) {
             alert("Failed to delete deck");

@@ -14,7 +14,7 @@ const FlashcardModal = ({ deck, onClose, isOwner }) => {
     const handleAddCard = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/flashcards/card', {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/flashcards/card`, {
                 ...newCard,
                 deckId: deck._id
             });

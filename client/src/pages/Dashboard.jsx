@@ -23,7 +23,7 @@ const Dashboard = () => {
 
     const fetchGroups = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/groups');
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/groups`);
             setGroups(res.data);
         } catch (err) {
             console.error(err);
@@ -35,7 +35,7 @@ const Dashboard = () => {
     const handleCreateGroup = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/groups', newGroup);
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/groups`, newGroup);
             setGroups([...groups, res.data]);
             setShowCreateModal(false);
             setNewGroup({ name: '', description: '' });
@@ -103,8 +103,8 @@ const Dashboard = () => {
                             <button
                                 onClick={() => setViewMode('my')}
                                 className={`${viewMode === 'my'
-                                        ? 'border-indigo-500 text-indigo-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-indigo-500 text-indigo-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
                             >
                                 <LayoutGrid size={18} className="mr-2" />
@@ -113,8 +113,8 @@ const Dashboard = () => {
                             <button
                                 onClick={() => setViewMode('all')}
                                 className={`${viewMode === 'all'
-                                        ? 'border-indigo-500 text-indigo-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-indigo-500 text-indigo-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
                             >
                                 <Globe size={18} className="mr-2" />

@@ -29,7 +29,7 @@ const AIAssistant = () => {
         setIsLoading(true);
 
         try {
-            const res = await axios.post('http://localhost:5000/api/ai/ask', {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/ai/ask`, {
                 prompt: userMessage
             });
             setMessages(prev => [...prev, { role: 'ai', content: res.data.response }]);
