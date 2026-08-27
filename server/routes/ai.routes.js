@@ -19,7 +19,7 @@ router.post('/ask', async (req, res) => {
         }
 
         const completion = await groq.chat.completions.create({
-            model: "llama-3.3-70b-versatile",
+            model: "openai/gpt-oss-120b",
             messages: [
                 { role: "system", content: "You are a helpful study assistant. Provide clear, concise explanations to help students learn." },
                 { role: "user", content: prompt }
